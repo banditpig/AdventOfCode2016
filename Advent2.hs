@@ -62,7 +62,8 @@ evalDirection (x, y, k) d  =
 -- one line of directions
 evalSeqLine :: Sequence -> Cell -> Cell
 evalSeqLine s startCell  = cell' where
-   cell' =  foldl (\cell d -> evalDirection cell d ) startCell s 
+   -- cell' =  foldl (\cell d -> evalDirection cell d ) startCell s 
+   cell' =  foldl evalDirection startCell s 
  
 evalAllSeqLines :: [Sequence] -> Cell -> [Cell]
 evalAllSeqLines (s:ss) cell = cell' : evalAllSeqLines ss cell'  where 

@@ -51,7 +51,7 @@ evalInstruction (d, x, y) instr  = updateXYCoords n d' (d', x, y)
     getN _ = 0
 
 evalPath :: Location -> Path -> Location
-evalPath = foldl $ evalInstruction
+evalPath = foldl evalInstruction
 
 -- ==========================================================
 minDistance :: Location -> [String] -> Int
