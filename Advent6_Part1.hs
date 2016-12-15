@@ -5,7 +5,6 @@ import Data.Map as Map (toList, fromListWith)
    
 sortTupleList :: [(Char, Integer)] -> [(Char, Integer)]
 sortTupleList lst = sortBy tupleOrder lst where
-
         tupleOrder :: (Char, Integer) -> (Char, Integer) -> Ordering
         tupleOrder (c1, x1) (c2, x2) 
         -- char compared by ord and a is less than b!
