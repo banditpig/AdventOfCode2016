@@ -21,7 +21,7 @@ main :: IO ()
 main = do
     input <- readFile "in6.txt"
     let xxs = (Prelude.map listMapFromString) . transpose . lines $ input 
-    
+    -- for part 2 just remove the reverse in the next line
     let ans = f' $ map (reverse . sortTupleList) xxs where
         f' = foldr f ""
         f (x:_) ac = fst (x):ac
