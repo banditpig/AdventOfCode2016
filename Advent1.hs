@@ -20,6 +20,7 @@ updateDirection (R _) d
     | d == E = S
 updateDirection _ d = d
 
+
 locEq :: Location -> Location -> Bool
 locEq (_, (x1, y1)) (_, (x2, y2)) = x1 == x2 && y1 == y2
 
@@ -38,8 +39,8 @@ parseInstructions  = map parseInstruction
 parseInstruction :: String -> Instruction
 parseInstruction [] = NOP
 parseInstruction (x:xs)
-    | x == 'L' =  (L (read xs :: Int))
-    | x == 'R' =  (R (read xs :: Int))
+    | x == 'L' =  L (read xs :: Int)
+    | x == 'R' =  R (read xs :: Int)
     | otherwise = NOP
 
 
