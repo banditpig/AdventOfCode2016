@@ -20,12 +20,58 @@
 -- rotate column x=0 by 1
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS -Wall -fwarn-tabs -fno-warn-type-defaults -fno-warn-unused-do-bind #-}
+import Text.Parsec
+import Text.Parsec.String
 
 type Row     = Int
 type Col     = Int
+type By      = Int
 data Screen  = S
-data Expr    = Rect Row Col | RotRow Row Col | RotCol Row Col | NOP -- need NOP?
+data Expr    = Rect Row Col | RotRow Row By | RotCol  Col By | NOP -- need NOP?
 type Program = [Expr]
+
+-- ================================= 
+-- rect AxB
+parseRect :: Parser Expr
+parseRect = do
+    spaces
+    string "rect"
+    row <- read <$> many1 digit
+    char 'x'
+    col <- read <$> many1 digit
+    return $ Rect row col
+
+-- rotate row y=A by B 
+parseRotRow :: Parser Expr
+parseRotRow = do
+    spaces 
+    string "row"
+    spaces
+    string "y="
+    row <- read <$> many1 digit
+    spaces
+    string "by"
+    spaces
+    by <- read <$> many1 digit
+
+    return $ RotRow row by
+
+-- rotate column x=0 by 1
+parseRotCol :: Parser Expr
+parseRotCol = do
+    spaces
+    string "rotate"
+    spaces
+    string "column"
+    spaces 
+    string "x="
+    col <- read <$> many1 digit
+    spaces
+    string "by"
+    spaces
+    by <- read <$> many1 digit
+    return $ RotCol col by
+-- =================================
 
 evalExpr :: Expr -> Screen -> Screen
 evalExpr e s =
@@ -34,7 +80,7 @@ evalExpr e s =
         (RotRow r c) -> evalRotRow r c s
         (RotCol r c) -> evalRotCol r c s
         (NOP       ) -> id s
-        
+
 evalRect :: Row -> Col -> Screen -> Screen
 evalRect = undefined
 
