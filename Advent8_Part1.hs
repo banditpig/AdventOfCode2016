@@ -26,8 +26,8 @@ import Text.Parsec.String
 type Row     = Int
 type Col     = Int
 type By      = Int
-data Screen  = S
-data Expr    = Rect Row Col | RotRow Row By | RotCol  Col By | NOP -- need NOP?
+type Screen  = [[Int]]
+data Expr    = Rect Row Col | RotRow Row By | RotCol  Col By | NOP deriving (Show)
 type Program = [Expr]
 
 -- ================================= 
@@ -36,6 +36,7 @@ parseRect :: Parser Expr
 parseRect = do
     spaces
     string "rect"
+    spaces
     row <- read <$> many1 digit
     char 'x'
     col <- read <$> many1 digit
@@ -45,6 +46,8 @@ parseRect = do
 parseRotRow :: Parser Expr
 parseRotRow = do
     spaces 
+    string "rotate"
+    spaces
     string "row"
     spaces
     string "y="
@@ -71,6 +74,13 @@ parseRotCol = do
     spaces
     by <- read <$> many1 digit
     return $ RotCol col by
+
+
+parseExpr :: Parser Expr 
+parseExpr = do
+    -- need try as the the text of each expr has common values
+    expr <- try parseRect <|> try parseRotRow <|> try parseRotCol    
+    return expr
 -- =================================
 
 evalExpr :: Expr -> Screen -> Screen
@@ -82,13 +92,13 @@ evalExpr e s =
         (NOP       ) -> id s
 
 evalRect :: Row -> Col -> Screen -> Screen
-evalRect = undefined
+evalRect _ _ s = s
 
 evalRotRow :: Row -> Col -> Screen -> Screen
-evalRotRow = undefined
+evalRotRow  _ _ s = s
 
 evalRotCol :: Row -> Col -> Screen -> Screen
-evalRotCol = undefined
+evalRotCol  _ _ s = s
 
 
 evalProgram :: Screen -> Program ->  Screen
@@ -97,15 +107,13 @@ evalProgram  = foldr evalExpr
 
 
 main :: IO ()
-main = print "Compiles!"
+main = do
+
+    input <- readFile "in8.txt"  
+    case sequence . map (parse parseExpr "") . lines $ input of
+        Right exprs -> print $ evalProgram [] exprs
+        Left  err   -> print err
     
-
-
-
-
-
-
-
-
-
+    print "Compiles!"
+    
 
