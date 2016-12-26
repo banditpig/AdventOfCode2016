@@ -30,11 +30,12 @@ type Row = Int
 type Col = Int 
 
 
-type Pixels = Set (Int, Int)
+type Pixels = Set (Row, Col)
 
 data Screen = Screen
-  { maxX   :: Int,
-    maxY   :: Int, 
+
+  { maxX   :: Col,
+    maxY   :: Row,
     pixels :: Pixels
   }
 instance Show Screen where
