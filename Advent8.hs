@@ -33,9 +33,9 @@ type Col = Int
 type Pixels = Set (Int, Int)
 
 data Screen = Screen
-  { maxX :: Int
-  , maxY :: Int
-  , pixels :: Pixels
+  { maxX   :: Int,
+    maxY   :: Int, 
+    pixels :: Pixels
   }
 instance Show Screen where
   show s = unlines $ map showRow [0 .. (maxY s - 1)]
