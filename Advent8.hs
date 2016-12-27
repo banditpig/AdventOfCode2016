@@ -39,10 +39,10 @@ data Screen = Screen
     pixels :: Pixels
   }
 instance Show Screen where
-  show s = unlines $ map showRow [0 .. (maxY s - 1)]
+  show s = unlines $ map showOneRow [0 .. (maxY s - 1)]
     where
-      showRow :: Row -> String
-      showRow y =
+      showOneRow :: Row -> String
+      showOneRow y =
         [ if (x, y) `S.member` pixels s then '#' else ' ' | x <- [0 .. (maxX s - 1)] ]
 
 initialScreen :: Screen
@@ -137,8 +137,8 @@ evalRotCol c by s = updateScreen s (S.map rotateCol)
 evalProgram :: Screen -> Program ->  Screen
 evalProgram  = foldl evalExpr
 
-pixelsLit :: Screen -> Int
-pixelsLit s = length $ S.toList (pixels s)
+countPixelsOn :: Screen -> Int
+countPixelsOn s = length $ S.toList (pixels s)
 
 main :: IO ()
 main = do
@@ -150,6 +150,6 @@ main = do
         Right exprs -> do
             let scr = evalProgram initialScreen exprs
             print scr
-            print $ pixelsLit scr
+            print $ countPixelsOn scr
         Left  err   -> print err
     
