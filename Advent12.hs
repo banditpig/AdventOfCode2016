@@ -23,12 +23,12 @@
 -- (because a is not zero, so the jnz a 2 skips it), leaving register a at 42.
 -- When you move past the last instruction, the program halts.
 
--- map for registers
--- need progam counter 
-import  Debug.Trace
+{-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS -Wall -fwarn-tabs -fno-warn-type-defaults -fno-warn-unused-do-bind #-}
+
+
+import Debug.Trace
 import qualified Control.Monad.State as S
-import Control.Monad.Reader
-import Data.Maybe (fromMaybe)
 import Data.Map (Map, (!))
 import qualified Data.Map as M
 import Text.Parsec 
@@ -155,7 +155,7 @@ evalProg :: S.State ProgState ProgState
 evalProg = do
     st <- S.get
     let ix = (progCount st)
-    let inst =  (program st) !! ix
+    
 
     evalInstr   $ (program st) !! ix -- $ trace ("inst " ++ show inst)
     case ix  >=  ( length . program $ st ) of 
@@ -166,7 +166,6 @@ evalProg = do
 
 main :: IO ()
 main = do
--- main = print $ evalState evalProg $ initialState "abcdaaadadadadaddadadadaddaaaadaaa"
 
     input <- readFile "in12.txt" 
 
