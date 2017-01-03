@@ -38,7 +38,7 @@
 -- 2 #OOO.##...
 -- 3 ###O#.###.
 -- 4 .##OO#OO#.
--- 5 ..##OOO.#.
+-- 5 ..##OOO .#.
 -- 6 #...##.###
 -- Thus, reaching 7,4 would take a minimum of 11 steps (starting from your current location, 1,1).
 -- What is the fewest number of steps required for you to reach 31,39?
@@ -51,18 +51,21 @@ import Data.Char (intToDigit)
 import Data.List
 import Data.Set (Set)
 import qualified Data.Set as S
+import qualified Control.Monad.State as St
+import Data.Map ((!))
+import qualified Data.Map as M
+
 
 puzzleInput :: Int
-puzzleInput = 10
+puzzleInput = 1362
+
+endPoint :: Cell 
+endPoint = (31, 39)
+
+startPoint :: Cell
+startPoint = (1, 1)
 
 type Cell = (Int, Int) 
-type Cells = Set Cell
-
-data Map = Map
-
-  { 
-    cells :: Cells
-  }
 
 showMap :: Int -> Int -> String
 showMap w h = unlines $ map showOneRow [0 .. h]
@@ -70,20 +73,30 @@ showMap w h = unlines $ map showOneRow [0 .. h]
       showOneRow y =
         [ if isOpen (x, y)  then '#' else '.' | x <- [0 .. w] ]
 
-endPoint :: Cell 
-endPoint = (7, 4)
+data MapState = MapState {
+    start      :: Cell,
+    target     :: Cell,
+    visitedSet :: Set Cell,
+    queue      :: [Cell],
+    dist       :: M.Map Cell Int
+    } deriving (Show)
 
-type Path = [Cell]
-type Solutions = [Path]
+initialMapState :: Cell -> Cell -> MapState
+initialMapState startCell targetCell = MapState startCell targetCell startSet q d  where 
+     
+    startSet =  S.empty
+    q = neighbours startCell
+    d = M.fromList  $ map (\x -> (x, 1)) (neighbours startCell)
 
 
 neighbours :: Cell -> [Cell]
-neighbours (x, y) = filter isOpen neighbours' where 
-    neighbours' 
-        | x == 0 && y == 0 = [(x + 1, y), (x, y + 1)              ]
-        | x == 0           = [(x + 1, y), (x, y + 1) , (x, y - 1) ]
-        | y == 0           = [(x + 1, y), (x - 1, y ), (x, y + 1) ]
-        | otherwise        = [(x + 1, y), (x - 1, y ), (x, y + 1),(x, y - 1) ]
+neighbours (x, y) =
+  [ neighbr | neighbr@(x', y') <- [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+              , x' >= 0 && y' >= 0
+              , isOpen neighbr ]
+
+isChild :: Cell -> Cell -> Bool
+isChild child parent = child `elem` neighbours parent
 
 f' :: Int ->  Cell  -> Int
 f' fav  (x, y) = fav +  x * x + 3 * x + 2 * x * y + y + y * y 
@@ -99,10 +112,44 @@ isEven x = x `mod` 2 == 0
 isOpen :: Cell -> Bool
 isOpen  (x, y)  = isEven . length . filter (=='1') .  toBinStr $  f (x, y)
 
-main :: IO ()
-main = do
-    print $ neighbours (7, 1)
 
- 
+
+relax :: St.State MapState MapState
+relax = do
+    st <- St.get
+    -- remove first in q and add it to visited set
+    let (hdQ:newQ) = queue st
+        nbs = neighbours hdQ
+        parentDistance = (dist st) ! hdQ
+        dist' = M.fromList  $ map (\x -> (x, parentDistance + 1)) nbs  
+        -- all heighbours are parentDistance + 1 a
+        -- put all neighbours hdQ in map with value of parentDistance + 1
+    
+    St.put $ st { visitedSet = S.insert hdQ (visitedSet st), 
+                       queue = nub $ newQ ++ nbs,
+                        dist = M.union (dist st) dist'
+                         } 
+        
+    return $ st  
+
+
+evalMap :: St.State MapState MapState
+evalMap = do
+    st <- St.get
+    case S.member (target st)  (visitedSet st) of
+        True  -> return $ st
+        False -> do
+            relax
+            evalMap 
+
+
+main :: IO () 
+main = do
+    let st = St.evalState  evalMap (initialMapState startPoint endPoint)
+   
+    --  part one
+    print $ (!) (dist st) endPoint 
+    -- part two
+    print $ length . M.filter ( <= 50) $ (dist st)
 
 
