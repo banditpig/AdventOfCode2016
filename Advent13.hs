@@ -46,6 +46,7 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS -Wall -fwarn-tabs -fno-warn-type-defaults -fno-warn-unused-do-bind #-}
+
 import Numeric ( showIntAtBase)
 import Data.Char (intToDigit)
 import Data.List
@@ -80,7 +81,7 @@ initialMapState startCell targetCell = MapState startCell targetCell startSet q 
      
     startSet =  S.empty
     q = neighbours startCell
-    d = M.fromList  $ map (\x -> (x, 1)) (neighbours startCell)
+    d = M.fromList . map (\x -> (x, 1)) $ q
 
 
 neighbours :: Cell -> [Cell]
@@ -115,26 +116,27 @@ relax = do
     let (hdQ:newQ) = queue st
         nbs = neighbours hdQ
         parentDistance = (dist st) ! hdQ
-        dist' = M.fromList  $ map (\x -> (x, parentDistance + 1)) nbs  
+        dist' = M.fromList . map (\x -> (x, parentDistance + 1)) $  nbs  
         -- all neighbours are parentDistance + 1 a
         -- put all neighbours hdQ in map with value of parentDistance + 1
     
     St.put $ st { visitedSet = S.insert hdQ (visitedSet st), 
                        queue = nub $ newQ ++ nbs,
                         dist = M.union (dist st) dist'
-                         } 
+                } 
         
     return $ st  
 
 
 evalMap :: St.State MapState MapState
 evalMap = do
+  
     st <- St.get
     case S.member (target st)  (visitedSet st) of
         True  -> return $ st
         False -> do
-            relax
-            evalMap 
+                  relax
+                  evalMap 
 
 
 main :: IO () 
