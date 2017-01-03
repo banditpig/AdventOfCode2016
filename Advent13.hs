@@ -57,15 +57,6 @@ import Data.Map ((!))
 import qualified Data.Map as M
 
 
-puzzleInput :: Int
-puzzleInput = 1362
-
-endPoint :: Cell 
-endPoint = (31, 39)
-
-startPoint :: Cell
-startPoint = (1, 1)
-
 type Cell = (Int, Int) 
 
 data MapState = MapState {
@@ -75,6 +66,16 @@ data MapState = MapState {
     queue      :: [Cell],
     dist       :: M.Map Cell Int
     } deriving (Show)
+
+
+puzzleInput :: Int
+puzzleInput = 1362
+
+endPoint :: Cell 
+endPoint = (31, 39)
+
+startPoint :: Cell
+startPoint = (1, 1)
 
 initialMapState :: Cell -> Cell -> MapState
 initialMapState startCell targetCell = MapState startCell targetCell startSet q d  where 
@@ -130,7 +131,7 @@ relax = do
 
 evalMap :: St.State MapState MapState
 evalMap = do
-  
+
     st <- St.get
     case S.member (target st)  (visitedSet st) of
         True  -> return $ st
