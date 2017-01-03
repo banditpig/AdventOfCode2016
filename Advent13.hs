@@ -67,12 +67,6 @@ startPoint = (1, 1)
 
 type Cell = (Int, Int) 
 
-showMap :: Int -> Int -> String
-showMap w h = unlines $ map showOneRow [0 .. h]
-    where 
-      showOneRow y =
-        [ if isOpen (x, y)  then '#' else '.' | x <- [0 .. w] ]
-
 data MapState = MapState {
     start      :: Cell,
     target     :: Cell,
@@ -122,7 +116,7 @@ relax = do
         nbs = neighbours hdQ
         parentDistance = (dist st) ! hdQ
         dist' = M.fromList  $ map (\x -> (x, parentDistance + 1)) nbs  
-        -- all heighbours are parentDistance + 1 a
+        -- all neighbours are parentDistance + 1 a
         -- put all neighbours hdQ in map with value of parentDistance + 1
     
     St.put $ st { visitedSet = S.insert hdQ (visitedSet st), 
@@ -145,8 +139,8 @@ evalMap = do
 
 main :: IO () 
 main = do
-    let st = St.evalState  evalMap (initialMapState startPoint endPoint)
-   
+
+    let st = St.evalState  evalMap (initialMapState startPoint endPoint)  
     --  part one
     print $ (!) (dist st) endPoint 
     -- part two
