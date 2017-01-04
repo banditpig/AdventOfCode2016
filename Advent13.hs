@@ -66,8 +66,8 @@ data MapState = MapState {
     } deriving (Show)
 
 
-puzzleInput :: Int
-puzzleInput = 1362
+mapInput :: Int
+mapInput = 1362
 
 endPoint :: Cell 
 endPoint = (31, 39)
@@ -76,12 +76,9 @@ startPoint :: Cell
 startPoint = (1, 1)
 
 initialMapState :: Cell -> Cell -> MapState
-initialMapState startCell targetCell = MapState False startCell targetCell  q d  where 
-     
-    
+initialMapState startCell targetCell = MapState False startCell targetCell  q d  where    
     q = neighbours startCell
     d = M.fromList . map (\x -> (x, 1)) $ q
-
 
 neighbours :: Cell -> [Cell]
 neighbours (x, y) =
@@ -89,13 +86,10 @@ neighbours (x, y) =
               , x' >= 0 && y' >= 0
               , isOpen neighbr ]
 
-isChild :: Cell -> Cell -> Bool
-isChild child parent = child `elem` neighbours parent
-
 f' :: Int ->  Cell  -> Int
 f' fav  (x, y) = fav +  x * x + 3 * x + 2 * x * y + y + y * y 
 f :: Cell -> Int
-f = f' puzzleInput
+f = f' mapInput
 
 toBinStr :: Int -> String 
 toBinStr x = showIntAtBase 2 intToDigit x "" 
@@ -104,29 +98,25 @@ isEven :: Int -> Bool
 isEven x = x `mod` 2 == 0
 
 isOpen :: Cell -> Bool
-isOpen  (x, y)  = isEven . length . filter (=='1') .  toBinStr $  f (x, y)
+isOpen  (x, y)  = isEven . length . filter (== '1') .  toBinStr $ f (x, y)
 
 relax :: St.State MapState MapState
 relax = do
-    st <- St.get
-    
+    st <- St.get    
     let (hdQ:tailQ) = queue st
         nbs = neighbours hdQ
         parentDistance = (dist st) ! hdQ
         dist' = M.fromList . map (\x -> (x, parentDistance + 1)) $  nbs  
-        
-    St.put $ st { 
-                       queue = nub $ tailQ ++ nbs,
-                        dist = M.union (dist st) dist',
-                       found = hdQ == (target st)
-                } 
-        
-    return $ st  
 
+    St.put $ st { 
+                 queue = nub $ tailQ ++ nbs,
+                  dist = M.union (dist st) dist',
+                 found = hdQ == (target st)
+                }        
+    return $ st  
 
 evalMap :: St.State MapState MapState
 evalMap = do
-
     st <- St.get
     case (found st) of
         True  -> return $ st
@@ -134,15 +124,10 @@ evalMap = do
                   relax
                   evalMap 
 
-
 main :: IO () 
 main = do
-
     let st = St.evalState  evalMap (initialMapState startPoint endPoint) 
-    
     --  part one
     print $ (!) (dist st) endPoint 
     -- part two
     print $ length . M.filter ( <= 50) $ (dist st)
-
-
