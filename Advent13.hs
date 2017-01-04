@@ -50,8 +50,6 @@
 import Numeric ( showIntAtBase)
 import Data.Char (intToDigit)
 import Data.List
-import Data.Set (Set)
-import qualified Data.Set as S
 import qualified Control.Monad.State as St
 import Data.Map ((!))
 import qualified Data.Map as M
@@ -60,9 +58,9 @@ import qualified Data.Map as M
 type Cell = (Int, Int) 
 
 data MapState = MapState {
+    found      :: Bool,
     start      :: Cell,
     target     :: Cell,
-    visitedSet :: Set Cell,
     queue      :: [Cell],
     dist       :: M.Map Cell Int
     } deriving (Show)
@@ -78,9 +76,9 @@ startPoint :: Cell
 startPoint = (1, 1)
 
 initialMapState :: Cell -> Cell -> MapState
-initialMapState startCell targetCell = MapState startCell targetCell startSet q d  where 
+initialMapState startCell targetCell = MapState False startCell targetCell  q d  where 
      
-    startSet =  S.empty
+    
     q = neighbours startCell
     d = M.fromList . map (\x -> (x, 1)) $ q
 
@@ -108,22 +106,19 @@ isEven x = x `mod` 2 == 0
 isOpen :: Cell -> Bool
 isOpen  (x, y)  = isEven . length . filter (=='1') .  toBinStr $  f (x, y)
 
-
-
 relax :: St.State MapState MapState
 relax = do
     st <- St.get
-    -- remove first in q and add it to visited set
-    let (hdQ:newQ) = queue st
+    
+    let (hdQ:tailQ) = queue st
         nbs = neighbours hdQ
         parentDistance = (dist st) ! hdQ
         dist' = M.fromList . map (\x -> (x, parentDistance + 1)) $  nbs  
-        -- all neighbours are parentDistance + 1 a
-        -- put all neighbours hdQ in map with value of parentDistance + 1
-    
-    St.put $ st { visitedSet = S.insert hdQ (visitedSet st), 
-                       queue = nub $ newQ ++ nbs,
-                        dist = M.union (dist st) dist'
+        
+    St.put $ st { 
+                       queue = nub $ tailQ ++ nbs,
+                        dist = M.union (dist st) dist',
+                       found = hdQ == (target st)
                 } 
         
     return $ st  
@@ -133,7 +128,7 @@ evalMap :: St.State MapState MapState
 evalMap = do
 
     st <- St.get
-    case S.member (target st)  (visitedSet st) of
+    case (found st) of
         True  -> return $ st
         False -> do
                   relax
@@ -143,7 +138,8 @@ evalMap = do
 main :: IO () 
 main = do
 
-    let st = St.evalState  evalMap (initialMapState startPoint endPoint)  
+    let st = St.evalState  evalMap (initialMapState startPoint endPoint) 
+    
     --  part one
     print $ (!) (dist st) endPoint 
     -- part two
