@@ -4,20 +4,14 @@
 -- import Data.Digest.Pure.MD5
 -- import Data.ByteString.Lazy.Char8 
 import Control.Monad
-single :: String -> Maybe (Char, String)
-single [] = Nothing
-single (a:xs) = Just (a, xs)
 
 matches :: (Char, String) -> Maybe (Char, String)
 matches (_, []) = Nothing
 matches (c, (x:xs)) = if c == x then Just (c, xs) else Nothing
     
-
-
 dbl  :: String -> Maybe (Char, String)
 dbl []     = Nothing
 dbl [_]    = Nothing
-
 dbl (a:b:[]) = if a == b then Just (a, []) else Nothing
 dbl (a:b:xs) 
     | a == b = Just (a, xs)
