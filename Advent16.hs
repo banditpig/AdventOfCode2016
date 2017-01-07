@@ -30,7 +30,7 @@
 -- If the length of the checksum is even, repeat the process until you end up with a \
 -- checksum with an odd length.
 
--- replace multiple a based on a functions
+-- replace multiple a based on a function
 replace :: (a -> a)  -> [a] -> [a]
 replace  f  = map (\x -> f x) 
 
