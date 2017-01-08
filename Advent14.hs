@@ -1,6 +1,7 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS -Wall -fwarn-tabs -fno-warn-type-defaults -fno-warn-unused-do-bind #-}
+<<<<<<< HEAD
 import Data.List (nub, tails, null)
 import Data.Hash.MD5 (md5s, Str(..))
 
@@ -43,5 +44,4 @@ subStr l = filter (\s -> (length s) == l) . map (take l) . tails
 
 main :: IO ()
 main = do 
-        part1 
-        part2
+        
