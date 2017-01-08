@@ -1,7 +1,7 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS -Wall -fwarn-tabs -fno-warn-type-defaults -fno-warn-unused-do-bind #-}
-<<<<<<< HEAD
+
 import Data.List (nub, tails, null)
 import Data.Hash.MD5 (md5s, Str(..))
 
