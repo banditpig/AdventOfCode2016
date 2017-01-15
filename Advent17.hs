@@ -56,7 +56,6 @@
 -- Your puzzle input is njfxhljp.
 
 {-# LANGUAGE OverloadedStrings #-}
-
 {-# OPTIONS -Wall -fwarn-tabs -fno-warn-type-defaults -fno-warn-unused-do-bind #-}
 
 import Data.Digest.Pure.MD5
@@ -108,7 +107,7 @@ openDoorsInRoom (str, rm)  =
     . foldr checkDoors [] 
     . take 4 
     . md5Hash $ str where
-    --  doors 1 open, 0 closed
+    --  doors - 1 open, 0 closed
     checkDoors = \x ac -> if (x `elem` ['b', 'c', 'd', 'e', 'f']) then 1:ac else 0:ac 
     -- only want open (1) and also be able to move into it - i.e. not edge
     validMoveFilter = filter   (\(x, _, rm') -> x == 1 && rm' /= rm )
@@ -116,7 +115,7 @@ openDoorsInRoom (str, rm)  =
 keepOpening :: Pos -> [(String, Room)] -> [Pos]
 keepOpening target rooms 
     | foundTarget target rooms = rooms
-    | otherwise = keepOpening target (concat (map openDoorsInRoom rooms))
+    | otherwise = keepOpening target $ concat . map openDoorsInRoom $ rooms
     where 
         foundTarget _ [] = False
         foundTarget t (x:xs)
