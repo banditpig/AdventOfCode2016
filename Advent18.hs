@@ -67,9 +67,16 @@ how many safe tiles are there?
 Input
 ......^.^^.....^^^^^^^^^...^.^..^^.^^^..^.^..^.^^^.^^^^..^^.^.^.....^^^^^..^..^^^..^^.^.^..^^..^^^..
 -}
-safe, trap :: Char
-safe = '.'
-trap = '^'
+
+
+{-
+Its left and center tiles are traps, but its right tile is not.
+Its center and right tiles are traps, but its left tile is not.
+Only its left tile is a trap.
+Only its right tile is a trap.
+In any other situation, the new tile is safe.
+-}
+traps = ["^^.", ".^^", "^..", "..^", "^.."]
 
 type Row = String 
 row1 :: Row
@@ -79,9 +86,20 @@ countSafe :: Row -> Int
 countSafe row = length . filter ('.'==) $ row 
 
 makeRow :: Row -> Row
-makeRow r = foldr (\c ac -> f c r ac ) [] r  where f c' r' ac' = undefined
+makeRow r = [ mapPattern (makePattern ix r) | ix <- [0..length r -1] ]
+   
 
-solve  r = sum . map countSafe . take 40 . iterate makeRow $ makeRow r
+mapPattern ptn
+    | elem ptn traps = '^'
+    | otherwise = '.'
+
+makePattern ix row
+  | ix == 0 = '.' : (!!) row 0 : [(!!) row 1]
+  | ix == length row - 1 = (!!) row (length row - 2) : (!!) row (length row - 1 ) : "."
+  | otherwise = (!!) row (ix -1) : (!!) row ix : [(!!) row (ix + 1)] 
+
+
+solve  r = sum . map countSafe . take 40 . iterate makeRow $ r
 
 main :: IO () 
 main = do
