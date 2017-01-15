@@ -98,8 +98,8 @@ makePattern ix row
   | ix == length row - 1 = (!!) row (length row - 2) : (!!) row (length row - 1 ) : "."
   | otherwise = (!!) row (ix -1) : (!!) row ix : [(!!) row (ix + 1)] 
 
-
-solve  r = sum . map countSafe . take 40 . iterate makeRow $ r
+                                      
+solve  r = sum . map countSafe . take 400000 . iterate makeRow $ r
 
 main :: IO () 
 main = do
