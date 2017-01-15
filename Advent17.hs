@@ -46,7 +46,10 @@
 
 -- If your passcode were ihgpwlah, the shortest path would be DDRRRD.
 -- With kglvqrro, the shortest path would be DDUDRLRRUDRD.
+
 -- With ulqzkmiv, the shortest would be DRURDRUDDLLDLUURRDULRLDUUDDDRR.
+
+
 -- Given your vault's passcode, what is the shortest path (the actual path, not just the length) 
 -- to reach the vault?
 
@@ -55,15 +58,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 {-# OPTIONS -Wall -fwarn-tabs -fno-warn-type-defaults -fno-warn-unused-do-bind #-}
--- import Debug.Trace
+
 import Data.Digest.Pure.MD5
-import Data.ByteString.Lazy.Char8 hiding (map, length, take, drop, elem, foldr, zipWith, filter)
+import Data.ByteString.Lazy.Char8 hiding (map, length, take, drop, elem, foldr, zipWith, filter, repeat, concat)
 
 type Room = (Int, Int) 
+type Pos = (String, Room)
+
 -- +/- on a bounded grid
 infixl 5 @+
 (@+) :: Int -> Int -> Int
-(@+) = gridPlus 2
+(@+) = gridPlus 3
 
 infixl 5 @-
 (@-) :: Int -> Int -> Int
@@ -79,45 +84,50 @@ gridMinus x y
     | x - y >= 0 = x - y 
     | otherwise = 0
 -- -------------------------------------
-start :: Room
-start = (0, 0)
 
-location :: Room 
-location = start
-
-end :: Room
-end = (3, 3)
-
-data Dir = U | D | L | R  deriving Show
-type Path = [Dir]
-
-dirChar :: Dir -> Char
-dirChar U = 'U'
-dirChar D = 'D'
-dirChar L = 'L'
-dirChar R = 'R'
 
 md5Hash :: String -> String
 md5Hash  = show . md5 . pack  
 
-openDoorsInRoom :: String -> Room -> [(Dir, Int, String, Room)]
-openDoorsInRoom s r = fiterIt . zipWith (\a b -> (a, b, s ++ [dirChar a], move a r) ) [U, D, L, R] . foldr checkDoors [] . take 4 . md5Hash $ s where
-    -- all doors 1 open, 0 closed
+
+posEq :: Pos -> Pos -> Bool
+posEq (_, (x1, y1)) (_, (x2, y2)) = x1 == x2 && y1 == y2
+
+move :: Char -> Room -> Room
+move 'U' (x, y) = (x, y @- 1)
+move 'D' (x, y) = (x, y @+ 1)
+move 'L' (x, y) = (x @- 1, y)
+move 'R' (x, y) = (x @+ 1, y)
+move _   (x, y) = (x, y)
+
+openDoorsInRoom :: (String, Room) -> [(String, Room)]
+openDoorsInRoom (str, rm)  = 
+    map (\(_, str', rm') -> (str', rm'))
+    . validMoveFilter 
+    . zipWith (\a b -> (b, str ++ [a] , move a rm) ) ['U', 'D', 'L', 'R'] 
+    . foldr checkDoors [] 
+    . take 4 
+    . md5Hash $ str where
+    --  doors 1 open, 0 closed
     checkDoors = \x ac -> if (x `elem` ['b', 'c', 'd', 'e', 'f']) then 1:ac else 0:ac 
     -- only want open (1) and also be able to move into it - i.e. not edge
-    fiterIt =  filter (\(_,x, _, r') -> x == 1 && r' /= r) 
+    validMoveFilter = filter   (\(x, _, rm') -> x == 1 && rm' /= rm )
 
--- openAllDoors :: String -> Room  -> [Room]
+keepOpening :: Pos -> [(String, Room)] -> [Pos]
+keepOpening target rooms 
+    | foundTarget target rooms = rooms
+    | otherwise = keepOpening target (concat (map openDoorsInRoom rooms))
+    where 
+        foundTarget _ [] = False
+        foundTarget t (x:xs)
+            | posEq t x = True
+            | otherwise = foundTarget t xs
 
-move :: Dir -> Room -> Room
-move U (x, y) = (x, y @- 1)
-move D (x, y) = (x, y @+ 1)
-move L (x, y) = (x @- 1, y)
-move R (x, y) = (x @+ 1, y)
 
+posEqTarget :: Pos -> Bool
+posEqTarget = posEq ("", (3,3))
 
 main :: IO ()
 main = do
-    print  $ openDoorsInRoom  "hijkl" start -- zipWith (\a b -> (a,b) ) [U, D, L, R] (openDoorsInRoom "hijkl") 
-
-
+    print $ filter  posEqTarget .   keepOpening ("", (3,3)) .  openDoorsInRoom $ ("kglvqrro", (0,0))
+   
