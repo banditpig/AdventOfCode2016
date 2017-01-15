@@ -66,6 +66,9 @@ Starting with the map in your puzzle input, in a total of 40 rows (including the
 how many safe tiles are there?
 Input
 ......^.^^.....^^^^^^^^^...^.^..^^.^^^..^.^..^.^^^.^^^^..^^.^.^.....^^^^^..^..^^^..^^.^.^..^^..^^^..
+
+Part 2 is how many safe tiles in 400 000  rows.
+
 -}
 
 
@@ -76,33 +79,37 @@ Only its left tile is a trap.
 Only its right tile is a trap.
 In any other situation, the new tile is safe.
 -}
-traps = ["^^.", ".^^", "^..", "..^", "^.."]
 
 type Row = String 
+
 row1 :: Row
 row1 = "......^.^^.....^^^^^^^^^...^.^..^^.^^^..^.^..^.^^^.^^^^..^^.^.^.....^^^^^..^..^^^..^^.^.^..^^..^^^.."
 
+traps :: [String]
+traps = ["^^.", ".^^", "^..", "..^", "^.."]
+
 countSafe :: Row -> Int
-countSafe row = length . filter ('.'==) $ row 
+countSafe = length . filter ('.'==) 
 
 makeRow :: Row -> Row
-makeRow r = [ mapPattern (makePattern ix r) | ix <- [0..length r -1] ]
+makeRow r = [ mapPattern $ makePattern ix r | ix <- [0..length r - 1] ]
    
 
 mapPattern ptn
     | elem ptn traps = '^'
-    | otherwise = '.'
+    | otherwise      = '.'
 
-makePattern ix row
-  | ix == 0 = '.' : (!!) row 0 : [(!!) row 1]
-  | ix == length row - 1 = (!!) row (length row - 2) : (!!) row (length row - 1 ) : "."
-  | otherwise = (!!) row (ix -1) : (!!) row ix : [(!!) row (ix + 1)] 
-
+makePattern ix r
+  | ix == 0            = '.' : (!!) r 0 : [(!!) r 1]
+  | ix == length r - 1 = (!!) r (length r - 2) : (!!) r (length r - 1 ) : "."
+  | otherwise          = (!!) r (ix -1) : (!!) r ix : [(!!) r (ix + 1)] 
+ 
                                       
-solve  r = sum . map countSafe . take 400000 . iterate makeRow $ r
+solve = sum . map countSafe . take 40 . iterate makeRow 
 
 main :: IO () 
 main = do
+
     print $ solve row1
 
 
